@@ -22,7 +22,7 @@
   let html = '<div class="shows-grid">';
   data.shows.forEach(s => {
     html += `<div class="show-card">
-      <img src="${s.poster || '/assets/placeholder.png'}">
+      <img src="${s.poster || '/assets/placeholder.svg'}">
       <div class="title">${s.title}</div>
       <button class="untrack" data-id="${s.id}">Remove</button>
     </div>`;

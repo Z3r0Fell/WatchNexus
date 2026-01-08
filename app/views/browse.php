@@ -322,7 +322,7 @@
       
       html += `
         <div class="show-card" data-show-id="${show.id}">
-          <img src="${show.poster_url || '/assets/placeholder.png'}" class="show-poster" alt="${show.title}">
+          <img src="${show.poster_url || '/assets/placeholder.svg'}" class="show-poster" alt="${show.title}">
           <div class="show-info">
             <div class="show-title" title="${show.title}">${show.title}</div>
             <div class="show-meta">
@@ -357,7 +357,7 @@
       
       html += `
         <div class="show-row" data-show-id="${show.id}">
-          <img src="${show.poster_url || '/assets/placeholder.png'}" class="show-row-poster" alt="${show.title}">
+          <img src="${show.poster_url || '/assets/placeholder.svg'}" class="show-row-poster" alt="${show.title}">
           <div class="show-row-info">
             <div class="show-row-title">${show.title}</div>
             <div class="show-row-description">${description}</div>

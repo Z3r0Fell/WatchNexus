@@ -3,13 +3,14 @@ declare(strict_types=1);
 
 /**
  * layout.php
- * - Must not output anything before DOCTYPE except intentional markup.
- * - If you see random SQL at the top of the page, it is NOT this file unless the SQL is literally pasted above this PHP tag.
+ * - Full-page shell for WatchNexus
+ * - Must not output anything before DOCTYPE
  */
 
-$title = $title ?? 'WatchNexus';
+$title   = $title ?? 'WatchNexus';
 $content = $content ?? '';
-$u = function_exists('current_user') ? current_user() : null;
+$page    = $page ?? ($_GET['page'] ?? 'calendar');
+$u       = function_exists('current_user') ? current_user() : null;
 
 ?>
 <!doctype html>
@@ -20,119 +21,107 @@ $u = function_exists('current_user') ? current_user() : null;
 
   <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></title>
 
-  <link rel="stylesheet" href="/assets/css/base.css?v=3">
-  <link rel="stylesheet" href="/assets/css/calendar.css?v=3">
-  <link rel="stylesheet" href="/assets/css/theme.css?v=3">
-  <link rel="stylesheet" href="/assets/css/modes.css?v=3">
-
+  <link rel="stylesheet" href="/assets/css/base.css?v=4">
+  <link rel="stylesheet" href="/assets/css/calendar.css?v=4">
+  <link rel="stylesheet" href="/assets/css/themes.css?v=4">
+  <link rel="stylesheet" href="/assets/css/modes.css?v=4">
 </head>
 <body>
   <header class="topbar">
-    <div class="row" style="align-items:center;gap:12px;">
-      <div class="logoDot"></div>
-      <div>
-        <div class="brand">WatchNexus</div>
-        <div class="small muted">Ultimate tracker • calendar-first • integrations-ready</div>
+    <div class="container">
+      <div class="row wrap" style="gap:12px;">
+        <div class="brand" style="padding:0;">
+          <div class="mark" aria-hidden="true"></div>
+          <div>
+            <div class="name">WatchNexus</div>
+            <div class="sub">Ultimate tracker • calendar-first • integrations-ready</div>
+          </div>
+        </div>
+
+        <div class="spacer"></div>
+
+        <button class="btn" type="button" id="themeBtn" hidden>Appearance</button>
+
+        <span class="badge" id="userPill" hidden></span>
+
+        <a class="btn" id="loginBtn" href="/?page=login">Login</a>
+        <a class="btn" id="registerBtn" href="/?page=register">Register</a>
+        <a class="btn" id="logoutBtn" href="/?page=logout" hidden>Logout</a>
       </div>
-      <div class="spacer"></div>
 
-      <button class="btn" type="button" id="themeBtn">Theme</button>
-      
-      <?php if ($u): ?>
-        <select id="uiModeSelect" class="input" style="padding:8px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.14);background:rgba(255,255,255,0.06);color:inherit;cursor:pointer;">
-          <option value="command">⚡ Command</option>
-          <option value="overview">📊 Overview</option>
-          <option value="signal">📡 Signal</option>
-          <option value="nebula">🌌 Nebula</option>
-        </select>
-      <?php endif; ?>
+      <div id="publicBanner" class="banner mt12" <?= $u ? 'hidden' : '' ?>>
+        <div class="badge">Public</div>
+        <div>
+          <p>Sign in to enable themes, tracking, downloads, and integrations.</p>
+        </div>
+      </div>
 
-      <?php if ($u): ?>
-        <span class="badge">Signed in as <strong><?= htmlspecialchars($u['display_name'] ?? $u['email'] ?? 'User', ENT_QUOTES, 'UTF-8') ?></strong></span>
-        <a class="btn" href="/?page=logout">Logout</a>
-      <?php else: ?>
-        <a class="btn" href="/?page=login">Login</a>
-        <a class="btn" href="/?page=register">Register</a>
-      <?php endif; ?>
+      <nav class="tabs" id="navTabs" style="margin-top:10px;"></nav>
     </div>
-
-    <nav class="tabs" style="margin-top:10px;">
-      <a class="tab" href="/?page=calendar">Calendar</a>
-      <a class="tab" href="/?page=browse">Browse</a>
-      <?php if ($u): ?>
-        <a class="tab" href="/?page=settings">Settings</a>
-        <?php if (function_exists('has_role') && has_role('mod')): ?>
-          <a class="tab" href="/?page=mod">Mod Tools</a>
-        <?php endif; ?>
-        <?php if (function_exists('has_role') && has_role('admin')): ?>
-          <a class="tab" href="/?page=admin">Admin</a>
-        <?php endif; ?>
-      <?php endif; ?>
-    </nav>
   </header>
 
-  <main id="appContent">
+  <main id="appContent" class="container" data-page="<?= htmlspecialchars((string)$page, ENT_QUOTES, 'UTF-8') ?>">
     <?= $content ?>
   </main>
 
-  <!-- Theme Modal -->
-  <div id="themeModal" class="modal" aria-hidden="true" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:9999;align-items:center;justify-content:center;">
-    <div class="modal-content" style="background:var(--bg-secondary);border:1px solid var(--border);border-radius:16px;padding:24px;max-width:500px;width:90%;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <h2 style="margin:0;">Theme Settings</h2>
-        <button id="themeClose" class="btn" style="padding:4px 12px;">✕</button>
+  <!-- Appearance Modal (Theme + Color Scheme + UI Mode) -->
+  <div id="themeModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="appearanceTitle">
+      <div class="mh">
+        <div class="h" id="appearanceTitle">Appearance</div>
+        <div class="spacer"></div>
+        <button id="themeClose" class="btn" type="button">✕</button>
       </div>
-      
-      <div style="margin-bottom:16px;">
-        <label style="display:block;margin-bottom:8px;font-weight:500;">Theme</label>
-        <select id="themeSelect" class="input" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:inherit;">
-          <!-- Options populated by theme.js -->
-        </select>
+
+      <div class="mb">
+        <div class="formgrid">
+          <div>
+            <div class="label">Theme</div>
+            <select id="themeSelect" class="input"></select>
+          </div>
+
+          <div>
+            <div class="label">Color scheme</div>
+            <select id="modeSelect" class="input">
+              <option value="system">System</option>
+              <option value="light">Light</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
+
+          <div>
+            <div class="label">UI mode</div>
+            <select id="uiModeSelect" class="input">
+              <option value="command">⚡ Command</option>
+              <option value="overview">📊 Overview</option>
+              <option value="signal">📡 Signal</option>
+              <option value="nebula">🌌 Nebula</option>
+            </select>
+          </div>
+
+          <div>
+            <div class="label">Effects</div>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:10px;">
+              <input type="checkbox" id="fxScanlines">
+              <span class="small muted">Scanlines overlay</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="small muted mt12">
+          Tip: <span class="kbd">Command</span> is compact, <span class="kbd">Overview</span> is roomy, <span class="kbd">Signal</span> emphasizes alerts, <span class="kbd">Nebula</span> is cinematic.
+        </div>
       </div>
-      
-      <div style="margin-bottom:16px;">
-        <label style="display:block;margin-bottom:8px;font-weight:500;">Mode</label>
-        <select id="modeSelect" class="input" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:inherit;">
-          <option value="system">System</option>
-          <option value="light">Light</option>
-          <option value="dark">Dark</option>
-        </select>
-      </div>
-      
-      <div style="margin-bottom:24px;">
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-          <input type="checkbox" id="fxScanlines">
-          <span>Scanline Effect</span>
-        </label>
-      </div>
-      
-      <div style="display:flex;gap:12px;">
-        <button id="applyTheme" class="btn primary" style="flex:1;">Apply</button>
-        <button id="resetTheme" class="btn">Reset</button>
+
+      <div class="ft">
+        <button id="applyTheme" class="btn primary" type="button">Apply</button>
+        <button id="resetTheme" class="btn" type="button">Reset</button>
       </div>
     </div>
   </div>
 
-  <script src="/assets/js/app.js?v=3"></script>
-  <script src="/assets/js/theme.js?v=3"></script>
-  <script src="/assets/js/theme-modes.js?v=3"></script>
-  <script src="/assets/js/settings.js?v=3"></script>
-  
-  <script>
-  // UI Mode Selector Handler
-  (function() {
-    const modeSelect = document.getElementById('uiModeSelect');
-    if (modeSelect && window.setUIMode) {
-      // Set saved mode on load
-      const saved = localStorage.getItem('wnx_ui_mode') || 'command';
-      modeSelect.value = saved;
-      
-      // Handle changes
-      modeSelect.addEventListener('change', function() {
-        window.setUIMode(this.value);
-      });
-    }
-  })();
-  </script>
+  <script src="/assets/js/app.js?v=4"></script>
+  <script src="/assets/js/appearance.js?v=4"></script>
+  <script src="/assets/js/settings.js?v=4"></script>
 </body>
 </html>

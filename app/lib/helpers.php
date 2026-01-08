@@ -20,28 +20,49 @@ function wnx_module_user_can_toggle(string $moduleId): bool {
   if (in_array($moduleId, $core, true)) {
     return false;
   }
-  
-  // Check if globally disabled or forced
+
   $pdo = db();
-  $st = $pdo->prepare("SELECT force_enabled, disabled_globally FROM module_policy WHERE module_id = ? LIMIT 1");
-  $st->execute([$moduleId]);
-  $p = $st->fetch();
-  
-  if ($p) {
-    if ((int)$p['disabled_globally'] === 1) return false;
-    if ((int)$p['force_enabled'] === 1) return false;
+
+  // Prefer new policy table
+  if (function_exists('wnx_db_has_table') && wnx_db_has_table('module_policy')) {
+    $st = $pdo->prepare("SELECT force_enabled, disabled_globally FROM module_policy WHERE module_id = ? LIMIT 1");
+    $st->execute([$moduleId]);
+    $p = $st->fetch();
+    if ($p) {
+      if ((int)$p['disabled_globally'] === 1) return false;
+      if ((int)$p['force_enabled'] === 1) return false;
+    }
+    return true;
   }
-  
+
+  // Legacy policy table
+  if (function_exists('wnx_db_has_table') && wnx_db_has_table('global_module_policy')) {
+    $st = $pdo->prepare("SELECT mode FROM global_module_policy WHERE module_id = ? LIMIT 1");
+    $st->execute([$moduleId]);
+    $p = $st->fetch();
+    if ($p) {
+      $mode = (string)($p['mode'] ?? 'default_on');
+      if ($mode === 'disabled_globally') return false;
+      if ($mode === 'forced_on') return false;
+    }
+    return true;
+  }
+
+  // No policy tables? allow toggle (UI will still respect core block above).
   return true;
 }
 
 function wnx_user_override_set(string $moduleId, bool $enabled): void {
   $u = current_user();
   if (!$u) return;
-  
+
+  if (function_exists('wnx_db_has_table') && !wnx_db_has_table('user_module_overrides')) {
+    return;
+  }
+
   $uid = (int)$u['id'];
   $pdo = db();
-  
+
   $val = $enabled ? 1 : 0;
   $st = $pdo->prepare("
     INSERT INTO user_module_overrides (user_id, module_id, enabled)
@@ -53,67 +74,112 @@ function wnx_user_override_set(string $moduleId, bool $enabled): void {
 
 function wnx_policy_load(): array {
   $pdo = db();
-  try {
-    $st = $pdo->query("SELECT module_id, force_enabled, enabled_by_default, disabled_globally FROM module_policy");
-    $modules = [];
-    while ($row = $st->fetch()) {
-      $id = (string)$row['module_id'];
-      $fe = (int)$row['force_enabled'];
-      $def = (int)$row['enabled_by_default'];
-      $dg = (int)$row['disabled_globally'];
-      
-      if ($dg === 1) {
-        $mode = 'disabled_globally';
-      } elseif ($fe === 1) {
-        $mode = 'forced_on';
-      } elseif ($def === 1) {
-        $mode = 'default_on';
-      } else {
-        $mode = 'default_off';
+
+  // New policy table
+  if (function_exists('wnx_db_has_table') && wnx_db_has_table('module_policy')) {
+    try {
+      $st = $pdo->query("SELECT module_id, force_enabled, enabled_by_default, disabled_globally FROM module_policy");
+      $modules = [];
+      while ($row = $st->fetch()) {
+        $id = (string)$row['module_id'];
+        $fe = (int)$row['force_enabled'];
+        $def = (int)$row['enabled_by_default'];
+        $dg = (int)$row['disabled_globally'];
+
+        if ($dg === 1) $mode = 'disabled_globally';
+        elseif ($fe === 1) $mode = 'forced_on';
+        elseif ($def === 1) $mode = 'default_on';
+        else $mode = 'default_off';
+
+        $modules[$id] = ['mode' => $mode];
       }
-      
-      $modules[$id] = ['mode' => $mode];
+      return ['modules' => $modules];
+    } catch (Throwable $e) {
+      return ['modules' => []];
     }
-    return ['modules' => $modules];
-  } catch (Throwable $e) {
-    return ['modules' => []];
   }
+
+  // Legacy policy table
+  if (function_exists('wnx_db_has_table') && wnx_db_has_table('global_module_policy')) {
+    try {
+      $st = $pdo->query("SELECT module_id, mode FROM global_module_policy");
+      $modules = [];
+      while ($row = $st->fetch()) {
+        $id = (string)$row['module_id'];
+        $mode = (string)($row['mode'] ?? 'default_on');
+        $modules[$id] = ['mode' => $mode];
+      }
+      return ['modules' => $modules];
+    } catch (Throwable $e) {
+      return ['modules' => []];
+    }
+  }
+
+  return ['modules' => []];
 }
 
 function wnx_policy_save(array $policy): bool {
   if (!isset($policy['modules']) || !is_array($policy['modules'])) {
     return false;
   }
-  
+
   $pdo = db();
-  
-  try {
-    $pdo->beginTransaction();
-    
-    foreach ($policy['modules'] as $id => $data) {
-      $mode = $data['mode'] ?? 'default_on';
-      
-      $fe = ($mode === 'forced_on') ? 1 : 0;
-      $def = ($mode === 'default_on' || $mode === 'forced_on') ? 1 : 0;
-      $dg = ($mode === 'disabled_globally') ? 1 : 0;
-      
-      $st = $pdo->prepare("
-        INSERT INTO module_policy (module_id, force_enabled, enabled_by_default, disabled_globally)
-        VALUES (?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE
-          force_enabled = VALUES(force_enabled),
-          enabled_by_default = VALUES(enabled_by_default),
-          disabled_globally = VALUES(disabled_globally)
-      ");
-      $st->execute([$id, $fe, $def, $dg]);
+
+  // Save to new policy table if present
+  if (function_exists('wnx_db_has_table') && wnx_db_has_table('module_policy')) {
+    try {
+      $pdo->beginTransaction();
+
+      foreach ($policy['modules'] as $id => $data) {
+        $mode = (string)($data['mode'] ?? 'default_on');
+
+        $fe = ($mode === 'forced_on') ? 1 : 0;
+        $def = ($mode === 'default_on' || $mode === 'forced_on') ? 1 : 0;
+        $dg = ($mode === 'disabled_globally') ? 1 : 0;
+
+        $st = $pdo->prepare("
+          INSERT INTO module_policy (module_id, force_enabled, enabled_by_default, disabled_globally)
+          VALUES (?, ?, ?, ?)
+          ON DUPLICATE KEY UPDATE
+            force_enabled = VALUES(force_enabled),
+            enabled_by_default = VALUES(enabled_by_default),
+            disabled_globally = VALUES(disabled_globally)
+        ");
+        $st->execute([(string)$id, $fe, $def, $dg]);
+      }
+
+      $pdo->commit();
+      return true;
+    } catch (Throwable $e) {
+      $pdo->rollBack();
+      return false;
     }
-    
-    $pdo->commit();
-    return true;
-  } catch (Throwable $e) {
-    $pdo->rollBack();
-    return false;
   }
+
+  // Save to legacy policy table if that's what exists
+  if (function_exists('wnx_db_has_table') && wnx_db_has_table('global_module_policy')) {
+    try {
+      $pdo->beginTransaction();
+
+      foreach ($policy['modules'] as $id => $data) {
+        $mode = (string)($data['mode'] ?? 'default_on');
+        $st = $pdo->prepare("
+          INSERT INTO global_module_policy (module_id, mode)
+          VALUES (?, ?)
+          ON DUPLICATE KEY UPDATE mode = VALUES(mode)
+        ");
+        $st->execute([(string)$id, $mode]);
+      }
+
+      $pdo->commit();
+      return true;
+    } catch (Throwable $e) {
+      $pdo->rollBack();
+      return false;
+    }
+  }
+
+  return false;
 }
 
 function logout_user(): void {

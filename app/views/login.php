@@ -23,8 +23,8 @@ $err = (string)($_GET['err'] ?? '');
     <form method="post" action="/api/auth.php">
       <input type="hidden" name="action" value="login">
 
-      <label>Email</label>
-      <input class="input" type="email" name="email" required autocomplete="email" placeholder="you@example.com">
+      <label>Email or username</label>
+      <input class="input" type="text" name="identifier" required autocomplete="username" placeholder="you@example.com  /  yourname">
 
       <label>Password</label>
       <input class="input" type="password" name="password" required autocomplete="current-password">

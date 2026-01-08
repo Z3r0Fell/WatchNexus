@@ -248,7 +248,7 @@
         
         html += `
           <div class="event" style="display:flex;gap:12px;padding:12px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;margin-bottom:10px;background:rgba(255,255,255,0.02);">
-            <img src="${evt.show.poster || '/assets/placeholder.png'}" class="poster" style="width:60px;height:90px;object-fit:cover;border-radius:4px;">
+            <img src="${evt.show.poster || '/assets/placeholder.svg'}" class="poster" style="width:60px;height:90px;object-fit:cover;border-radius:4px;">
             <div class="info" style="flex:1;">
               <div class="title" style="font-weight:600;margin-bottom:4px;">${evt.show.title}</div>
               <div class="episode" style="margin-bottom:4px;opacity:0.9;">${hasEpisode ? 'S'+String(evt.season).padStart(2,'0')+'E'+String(evt.episode).padStart(2,'0') : evt.type}${evt.title ? ' - '+evt.title : ''}</div>
@@ -336,7 +336,7 @@
       const hasEpisode = evt.season && evt.episode;
       html += `
         <div style="display:flex;gap:12px;padding:12px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;margin-bottom:10px;">
-          <img src="${evt.show.poster || '/assets/placeholder.png'}" style="width:50px;height:75px;object-fit:cover;border-radius:4px;">
+          <img src="${evt.show.poster || '/assets/placeholder.svg'}" style="width:50px;height:75px;object-fit:cover;border-radius:4px;">
           <div style="flex:1;">
             <div style="font-weight:600;">${evt.show.title}</div>
             <div style="margin:4px 0;opacity:0.9;">${hasEpisode ? 'S'+String(evt.season).padStart(2,'0')+'E'+String(evt.episode).padStart(2,'0') : evt.type}${evt.title ? ' - '+evt.title : ''}</div>
@@ -362,7 +362,7 @@
         
         html += `
           <div class="event" style="display:flex;gap:12px;padding:12px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;margin-bottom:10px;background:rgba(255,255,255,0.02);">
-            <img src="${evt.show.poster || '/assets/placeholder.png'}" class="poster" style="width:60px;height:90px;object-fit:cover;border-radius:4px;">
+            <img src="${evt.show.poster || '/assets/placeholder.svg'}" class="poster" style="width:60px;height:90px;object-fit:cover;border-radius:4px;">
             <div class="info" style="flex:1;">
               <div class="title" style="font-weight:600;margin-bottom:4px;">${evt.show.title}</div>
               <div class="episode" style="margin-bottom:4px;opacity:0.9;">${hasEpisode ? 'S'+String(evt.season).padStart(2,'0')+'E'+String(evt.episode).padStart(2,'0') : evt.type}${evt.title ? ' - '+evt.title : ''}</div>

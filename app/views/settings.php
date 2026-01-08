@@ -151,7 +151,7 @@ async function loadTraktStatus() {
   if (!traktBox) return;
   
   try {
-    const resp = await fetch('/api/user_integrations_get.php');
+    const resp = await fetch('/api/integrations_get.php');
     const data = await resp.json();
     
     if (!data.ok) {
@@ -223,7 +223,7 @@ async function loadTraktStatus() {
         btn.textContent = 'Disconnecting...';
         
         try {
-          const resp = await fetch('/api/user_integrations_save.php', {
+          const resp = await fetch('/api/integrations_save.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
