@@ -1,0 +1,7 @@
+
+{
+  "command": { "label": "Command", "bodyClass": "mode-command" },
+  "overview": { "label": "Overview", "bodyClass": "mode-overview" },
+  "signal": { "label": "Signal", "bodyClass": "mode-signal" },
+  "nebula": { "label": "Nebula", "bodyClass": "mode-nebula" }
+}

@@ -1,0 +1,134 @@
+/* WatchNexus v3 - theme.css
+   Purpose: make theme switching visible by reacting to html[data-theme] + html[data-mode].
+   Safe overrides: mainly variables + common components.
+*/
+
+/* Mode handling */
+html { color-scheme: dark; }
+html[data-mode="light"] { color-scheme: light; }
+html[data-mode="dark"] { color-scheme: dark; }
+
+@media (prefers-color-scheme: light) {
+  html[data-mode="system"] { color-scheme: light; }
+}
+@media (prefers-color-scheme: dark) {
+  html[data-mode="system"] { color-scheme: dark; }
+}
+
+/* Default palette */
+:root{
+  --bg: #0b0c0f;
+  --surface: rgba(255,255,255,0.06);
+  --surface2: rgba(255,255,255,0.10);
+  --text: rgba(255,255,255,0.92);
+  --muted: rgba(255,255,255,0.68);
+  --border: rgba(255,255,255,0.10);
+  --accent: #56c2ff;
+  --accent2: #00ffd5;
+  --danger: #ff4d4d;
+}
+
+/* Apply broadly (even if base.css doesn't use vars) */
+body{
+  background: radial-gradient(1200px 600px at 20% -10%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%),
+              radial-gradient(900px 450px at 80% 0%, color-mix(in srgb, var(--accent2) 12%, transparent), transparent 55%),
+              var(--bg);
+  color: var(--text);
+}
+
+a{ color: var(--accent); }
+.small, .muted { color: var(--muted) !important; }
+
+.topbar, header.topbar{
+  background: linear-gradient(180deg, rgba(0,0,0,0.55), rgba(0,0,0,0.15));
+  border-bottom: 1px solid var(--border);
+}
+
+.card, .banner, .modal, .panel{
+  background: var(--surface);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(10px);
+}
+
+.hd, .mh { border-bottom: 1px solid var(--border); }
+
+.btn, button.btn, a.btn{
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.btn.primary, a.btn.primary, button.btn.primary{
+  background: color-mix(in srgb, var(--accent) 22%, rgba(255,255,255,0.06));
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+}
+
+.btn.danger, a.btn.danger, button.btn.danger{
+  background: color-mix(in srgb, var(--danger) 22%, rgba(255,255,255,0.06));
+  border-color: color-mix(in srgb, var(--danger) 55%, var(--border));
+}
+
+.badge{
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--border));
+  color: var(--accent);
+}
+
+/* Tabs */
+.tabs .tab{
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+}
+.tabs .tab.active{
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+/* Optional scanlines */
+html[data-fx-scanlines] body{
+  background-image:
+    linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 100% 3px;
+  background-blend-mode: overlay;
+}
+
+/* ---------------- THEME PALETTES ---------------- */
+
+/* Paper & Ink */
+html[data-theme="paper_ink"]{
+  --bg: #f4f1ea;
+  --surface: rgba(255,255,255,0.78);
+  --surface2: rgba(255,255,255,0.92);
+  --text: rgba(18,18,18,0.92);
+  --muted: rgba(18,18,18,0.62);
+  --border: rgba(18,18,18,0.14);
+  --accent: #1b6fff;
+  --accent2: #7b2cff;
+}
+
+/* Grid Noir */
+html[data-theme="grid_noir"]{
+  --bg:#07080b;
+  --accent:#56c2ff;
+  --accent2:#00ffd5;
+}
+
+/* LCARS-ish */
+html[data-theme="lcars"]{
+  --bg:#120a07;
+  --accent:#ff9b32;
+  --accent2:#ffd166;
+}
+
+/* TRON-ish (Legacy) */
+html[data-theme="tron_legacy"]{
+  --bg:#05070c;
+  --accent:#00d9ff;
+  --accent2:#00ffd5;
+}
+
+/* Doctor-ish */
+html[data-theme="tardis_blue"]{
+  --bg:#060b18;
+  --accent:#2f7bff;
+  --accent2:#7b2cff;
+}

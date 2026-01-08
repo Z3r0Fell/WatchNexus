@@ -1,0 +1,40 @@
+{
+    "modules": {
+        "calendar": {
+            "mode": "default_off"
+        },
+        "browse": {
+            "mode": "default_off"
+        },
+        "myshows": {
+            "mode": "default_off"
+        },
+        "settings": {
+            "mode": "default_off"
+        },
+        "mod": {
+            "mode": "default_off"
+        },
+        "admin": {
+            "mode": "default_off"
+        },
+        "trakt": {
+            "mode": "default_off"
+        },
+        "seedr": {
+            "mode": "default_off"
+        },
+        "jackett": {
+            "mode": "default_off"
+        },
+        "prowlarr": {
+            "mode": "default_off"
+        },
+        "themes": {
+            "mode": "default_off"
+        },
+        "example_discovered": {
+            "mode": "default_off"
+        }
+    }
+}
