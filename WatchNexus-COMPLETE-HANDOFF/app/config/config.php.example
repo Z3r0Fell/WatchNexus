@@ -1,0 +1,22 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * In production:
+ * - move secrets OUTSIDE webroot
+ * - set WATCHNEXUS_SECRET_KEY_B64 as an environment variable
+ * - configure DB credentials here (or via env)
+ */
+
+define('WNX_APP_NAME', 'WatchNexus');
+define('WNX_BASE_URL', ''); // optional if you want absolute URLs
+
+// Required for encrypting integration secrets at rest.
+// Generate a key (recommended): php -r "echo base64_encode(random_bytes(32)).PHP_EOL;"
+define('WNX_SECRET_KEY_B64', getenv('WATCHNEXUS_SECRET_KEY_B64') ?: '');
+
+// DB config placeholders (unused in demo mode)
+define('WNX_DB_HOST', getenv('WNX_DB_HOST') ?: 'localhost');
+define('WNX_DB_NAME', getenv('WNX_DB_NAME') ?: 'watchnexus_v3');
+define('WNX_DB_USER', getenv('WNX_DB_USER') ?: 'root');
+define('WNX_DB_PASS', getenv('WNX_DB_PASS') ?: '');
