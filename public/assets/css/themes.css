@@ -26,6 +26,13 @@ html[data-mode="dark"] { color-scheme: dark; }
   --accent: #56c2ff;
   --accent2: #00ffd5;
   --danger: #ff4d4d;
+
+  /* Bridge tokens so base.css + inline view styles all resolve */
+  --primary: var(--accent);
+  --primary2: var(--accent2);
+  --text-muted: var(--muted);
+  --bg-secondary: var(--surface);
+  --bg-tertiary: var(--surface2);
 }
 
 /* Apply broadly (even if base.css doesn't use vars) */

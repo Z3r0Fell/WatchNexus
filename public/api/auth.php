@@ -49,10 +49,10 @@ if ($action === '') {
 try {
   if ($action === 'register') {
     $email = (string)($_POST['email'] ?? '');
-    $display = (string)($_POST['display_name'] ?? '');
+    $username = (string)($_POST['username'] ?? ($_POST['display_name'] ?? ''));
     $pw = (string)($_POST['password'] ?? '');
 
-    $uid = auth_register($email, $pw, $display);
+    $uid = auth_register($email, $pw, $username);
     auth_login_userid($uid);
 
     if (wants_json()) json_ok(['redirect' => '/?page=calendar']);
@@ -60,10 +60,10 @@ try {
   }
 
   if ($action === 'login') {
-    $email = (string)($_POST['email'] ?? '');
+    $identifier = (string)($_POST['identifier'] ?? ($_POST['email'] ?? ''));
     $pw = (string)($_POST['password'] ?? '');
 
-    $uid = auth_login($email, $pw);
+    $uid = auth_login_identifier($identifier, $pw);
     auth_login_userid($uid);
 
     if (wants_json()) json_ok(['redirect' => '/?page=calendar']);

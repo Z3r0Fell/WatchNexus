@@ -28,6 +28,14 @@
   --font-ui: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   --font-display: Space Grotesk, Inter, system-ui, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+
+  /* Aliases used across views (legacy + new) */
+  --muted: var(--text-muted);
+  --bg-primary: var(--bg);
+  --bg-secondary: var(--surface);
+  --bg-tertiary: var(--surface2);
+  --shadow: 0 8px 28px rgba(0,0,0,0.25);
+
 }
 
 *{box-sizing:border-box}
@@ -211,3 +219,31 @@ nav.tabs{
 }
 .modal-backdrop { display: none; }
 .modal-backdrop.open { display: flex; }
+
+/* Header pills / badges */
+.badge{
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:12px;
+  border:1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: color-mix(in srgb, var(--surface2) 70%, transparent);
+  color: var(--text);
+}
+
+/* Simple toolbar row (used in several views) */
+.toolbar{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.toolbar label{font-size:12px; color:var(--text-muted); display:flex; align-items:center; gap:8px;}
+.toolbar input[type="checkbox"]{accent-color: var(--primary);}
+
+/* Make the main area feel intentional */
+#appContent{padding-bottom:30px;}
+
+/* Normalize posters */
+img.poster, img.show-poster, img.show-row-poster{
+  background: color-mix(in srgb, var(--surface2) 80%, transparent);
+}
